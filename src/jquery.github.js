@@ -1,5 +1,11 @@
 (function ($, window, document, undefined) {
 	"use strict";
+
+    // WebQA Automation repositories
+    var WebQARepos = ['flightdeck-selenium', 'Addon-Tests', 'Affiliates-Tests',
+        'marketing-project-template', 'marketplace-tests', 'mdn-tests', 'mcom-tests',
+        'moztrap-tests', 'Socorro-Tests', 'snippets-tests', 'sumo-tests', 'mozwebqa-test-templates',
+        'qmo-tests', 'wiki-tests'];
 	// Setup our defaults
 	var pluginName = 'github',
 		defaults = {
@@ -21,7 +27,7 @@
 		this.init();
 
 		this.errorType = '';
-	}
+    }
 
 	// Our Prototype!
 	Github.prototype = {
@@ -29,28 +35,29 @@
 		init: function () {
 			// Explicitly set our options and element so they can be inherited by functions
 			// Then init our functions to build the widget
-			var el = this.element,
+            var el = this.element,
 				options = this.options,
 				user = this.model("user", options.user, function (data) {
 					// Build layout view with user data and append it to the specified element
 					$(el).append(Github.prototype.view_layout(data.data, options));
 				}),
-				repos = this.model("repos", options.user, function (data) {
+                repolist = this.repo(options.user, function (data) {
 					// Build our repos partial and append it to the layout, which is already in the DOM
-					$(el).find("#ghw-repos ul").append(Github.prototype.view_partial_repos(data, options, el));
-					// Fade out the Github loader gif, and then fade in the repos we just appended
-					$(el).find("#ghw-repos #ghw-github-loader").slideUp(250, function () {
-						$(el).find("#ghw-repos ul").slideDown(250);
-					});
-					// Init our bind function once everything is present within the DOM
-					Github.prototype.bind(options);
-				});
+					$(el).find("#ghw-repos ul").append(Github.prototype.view_partial_repos(data, el));
+                    // Fade out the Github loader gif, and then fade in the repos we just appended
+                    $(el).find("#ghw-repos #ghw-github-loader").slideUp(250, function () {
+                        $(el).find("#ghw-repos ul").slideDown(250);
+                    });
+                    // Init our bind function once everything is present within the DOM
+                    Github.prototype.bind(options);
+                })
+
 		},
 
 		// Our user model, get and set user data
 		model: function (type, user, callback) {
 			// Construct our endpoint URL depending on what is being requested
-			var url = "https://api.github.com/users/" + user.toLowerCase(); if (type === "repos") { url += "/repos"; } url += "?callback=?";
+			var url = "https://api.github.com/orgs/" + user.toLowerCase(); if (type === "repos") { url += "/repos"; } url += "?callback=?";
 			// Get data from Github user endpoint, JSONP bitches
 			$.getJSON(url, function (data) {
 				// Make sure our callback is defined and is of the right type, if it is fire it
@@ -60,7 +67,22 @@
 			});
 		},
 
-		// The main layout for the widget
+        // Get data for WebQA repos
+        repo: function (user, callback) {
+            for (var i = 0; i < WebQARepos.length; i++) {
+                // Construct our endpoint URL
+                var url = "https://api.github.com/repos/" + user.toLowerCase() + "/" + WebQARepos[i].toLowerCase() + "?callback=?";
+                // Get data from Github user endpoint, JSONP bitches
+                $.getJSON(url, function (data) {
+                    // Make sure our callback is defined and is of the right type, if it is fire it
+                    if (typeof callback !== "undefined" && typeof callback === "function") {
+                        callback(data);
+                    }
+                });
+            }
+        },
+
+        // The main layout for the widget
 		view_layout: function (user, options) {
 			var markup = '';
 			// As it's setting a simple string, the width value can be anything acceptable to CSS (px/%/em/pt etc)
@@ -83,10 +105,10 @@
 					markup += '<p class="ghw-name">' + user.name + '</p>';
 				}
 				markup += '<p class="ghw-place">';
-				if (typeof user.company !== "undefined" && user.company.length > 0) {
+				if (typeof user.company !== "undefined" && user.company !== null && user.company.length > 0) {
 					markup += user.company + ' ';
 				}
-				if (typeof user.location !== "undefined" && user.location.length > 0) {
+				if (typeof user.location !== "undefined" && user.location !== null && user.location.length > 0) {
 					markup += user.location;
 				}
 				markup += '</p>';
@@ -122,42 +144,30 @@
 		},
 
 		// Our repos partial, which will construct the repo list itself
-		view_partial_repos: function (data, options, el) {
+		view_partial_repos: function (data, el) {
 			var markup = '';
-			// Are we displaying our repos oldest first?
-			if (options.oldest_first === true) {
-				// Yes? use the reverse method to reverse the order of the data objects
-				data = data.data.reverse();
-			} else {
-				data = data.data;
-			}
-			// Iterate through the repos
-			$.each(data, function (i) {
-				// Github returns pages of 30 repos per request, however we only want to show the number set in the options
-				if (i <= options.show_repos - 1) {
-					markup += '<li id="ghw-repo-' + i + '" class="ghw-clear ghw-repo';
-					// This is a little bit of a hack to make the CSS easier, if the repo has a language attribute, it will mean
-					// the box carries over two lines, which means the buttons on the right become missaligned. So therefore, if
-					// there are two lines, add a special class so we can style it more easily.
-					if (this.language !== null) {
-						markup += ' double';
-					}
-					markup += '">';
-					markup += '<div class="ghw-left">';
-					markup += '<p class="ghw-title"><a href="' + this.html_url + '" data-description="<p>' + this.name + '</p>' + this.description + '" class="ghw-github-tooltip">' + this.name + '</a></p>';
-					markup += '<p class="ghw-meta-data">';
-					if (this.language !== null) {
-						markup += '<span class="ghw-language">' + this.language + '</span></p>';
-					}
-					markup += '</div>';
-					markup += '<div class="ghw-right">';
-					markup += '<span class="ghw-forks ghw-github-tooltip" data-description="This repo has ' + this.forks + ' fork(s)">' + this.forks + '</span>';
-					markup += '<span class="ghw-watchers ghw-github-tooltip" data-description="This repo has ' + this.watchers + ' watcher(s)">' + this.watchers + '</span>';
-					markup += '<span class="ghw-issues ghw-github-tooltip" data-description="This project has ' + this.open_issues + ' open issues">' + this.open_issues + '</span>';
-					markup += '</div>';
-					markup += '</li>';
-				}
-			});
+            var repo = data.data;
+            markup += '<li id="ghw-repo-' + repo.name + '" class="ghw-clear ghw-repo';
+            // This is a little bit of a hack to make the CSS easier, if the repo has a language attribute, it will mean
+            // the box carries over two lines, which means the buttons on the right become missaligned. So therefore, if
+            // there are two lines, add a special class so we can style it more easily.
+            if (repo.language !== null) {
+                markup += ' double';
+            }
+            markup += '">';
+            markup += '<div class="ghw-left">';
+            markup += '<p class="ghw-title"><a href="' + repo.html_url + '" data-description="<p>' + repo.name + '</p>' + repo.description + '" class="ghw-github-tooltip">' + repo.name + '</a></p>';
+            markup += '<p class="ghw-meta-data">';
+            if (repo.language !== null) {
+                markup += '<span class="ghw-language">' + repo.language + '</span></p>';
+            }
+            markup += '</div>';
+            markup += '<div class="ghw-right">';
+            markup += '<span class="ghw-forks ghw-github-tooltip" data-description="This repo has ' + repo.forks + ' fork(s)">' + repo.forks + '</span>';
+            markup += '<span class="ghw-watchers ghw-github-tooltip" data-description="This repo has ' + repo.watchers + ' watcher(s)">' + repo.watchers + '</span>';
+            markup += '<span class="ghw-issues ghw-github-tooltip" data-description="This project has ' + repo.open_issues + ' open issues">' + repo.open_issues + '</span>';
+            markup += '</div>';
+            markup += '</li>';
 			return markup;
 		},
 
