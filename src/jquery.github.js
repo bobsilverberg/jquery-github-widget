@@ -48,8 +48,15 @@
                     $(el).find("#ghw-repos #ghw-github-loader").slideUp(250, function () {
                         $(el).find("#ghw-repos ul").slideDown(250);
                     });
+
+//                       console.log($("li"));
+//                        $("li").sort(function(left, right) {
+//                            return $(left).attr("id") - $(right).attr("id");
+//                        }).each(function() { $("ul").append($(this)); });
+//                       console.log($("li"));
+
                     // Init our bind function once everything is present within the DOM
-                    Github.prototype.bind(options);
+                    Github.prototype.bind(el, options);
                 })
 
 		},
@@ -116,7 +123,7 @@
 					markup += '<p class="ghw-bio">' + user.bio + '</p>';
 				}
 				if (user.hireable === true) {
-					markup += '<p class="ghw-hireable">I\'m availabe for hire!</p>';
+					markup += '<p class="ghw-hireable">I\'m available for hire!</p>';
 				}
 				markup += '<span class="ghw-repos">' + user.public_repos + ' repos</span>';
 				markup += '<span class="ghw-gists">' + user.public_gists + ' gists</span>';
@@ -130,7 +137,7 @@
 				markup += 'User not found';
 			}
 			markup += '</a></h2>';
-			markup += '<a href="' + user.html_url + '" id="ghw-header-total-repos">' + user.public_repos + ' repos</a>';
+			markup += '<a href="' + user.html_url + '" id="ghw-header-total-repos">' + WebQARepos.length + ' repos</a>';
 			// Check if the option to show followers is set to true, if not, don't show it
 			if (options.show_follows === true && typeof user.login !== "undefined") {
 				markup += ' | <a href="https://github.com/' + user.login.toLowerCase() + '/followers" id="ghw-current-followers">' + user.followers + ' followers</a>';
@@ -172,7 +179,7 @@
 		},
 
 		// Our bin utility funciton that will be init'd once we have populated the DOM
-		bind: function (options) {
+		bind: function (el, options) {
 			// If the option to show the extended user info is set to true then bind it to do so
 			if (options.show_extended_info === true) {
 				$("#ghw-github-user").hover(function () {
