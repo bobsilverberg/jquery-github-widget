@@ -187,14 +187,14 @@
                 }
                 markup += '">';
                 markup += '<div class="ghw-left">';
-                markup += '<p class="ghw-title"><a href="' + this.html_url + '" data-description="<p>' + this.base.repo.full_name + '</p>' + this.title + '</p>' + this.body + '" class="ghw-github-tooltip"><strong>' + this.base.repo.full_name + '</strong> - ' + this.title + '</a></p>';
+                markup += '<p class="ghw-title"><a href="' + this.html_url + '" data-description="<p>' + this.head.repo.full_name + ' -> ' + this.base.repo.full_name + '</p>' + this.title + '</p>' + this.body + '" class="ghw-github-tooltip"><strong>' + this.base.repo.full_name + '</strong> - ' + this.title + '</a></p>';
                 markup += '<p class="ghw-meta-data">';
                 if (this.language !== null) {
                     markup += '<span class="ghw-language">from: <a href="' + this.head.repo.html_url + '">' + this.head.repo.full_name + '</a></span></p>';
                 }
                 markup += '</div>';
                 markup += '<div class="ghw-right">';
-                markup += '<span class="ghw-forks ghw-github-tooltip" data-description="This repo has ' + this.forks + ' fork(s)">' + this.body + '</span>';
+                markup += '<span class="ghw-forks">' + this.body + '</span>';
                 markup += '</div>';
                 markup += '</li>';
             });
