@@ -41,12 +41,12 @@
 					// Build layout view with user data and append it to the specified element
 					$(el).append(Github.prototype.view_layout(data.data, options));
 				}),
-                repolist = this.repo(options.user, function (data) {
+                prlist = this.prs(options.user, function (data) {
 					// Build our repos partial and append it to the layout, which is already in the DOM
-					$(el).find("#ghw-repos ul").append(Github.prototype.view_partial_repos(data, el));
+					$(el).find("#ghw-prs ul").append(Github.prototype.view_partial_prs(data, el));
                     // Fade out the Github loader gif, and then fade in the repos we just appended
-                    $(el).find("#ghw-repos #ghw-github-loader").slideUp(250, function () {
-                        $(el).find("#ghw-repos ul").slideDown(250);
+                    $(el).find("#ghw-prs #ghw-github-loader").slideUp(250, function () {
+                        $(el).find("#ghw-prs ul").slideDown(250);
                     });
 
                     // Init our bind function once everything is present within the DOM
@@ -68,11 +68,11 @@
 			});
 		},
 
-        // Get data for WebQA repos
-        repo: function (user, callback) {
+        // Get data for WebQA pull requests
+        prs: function (user, callback) {
             for (var i = 0; i < WebQARepos.length; i++) {
                 // Construct our endpoint URL
-                var url = "https://api.github.com/repos/" + user.toLowerCase() + "/" + WebQARepos[i].toLowerCase() + "?callback=?";
+                var url = "https://api.github.com/repos/" + user.toLowerCase() + "/" + WebQARepos[i].toLowerCase() + "/pulls?callback=?";
                 // Get data from Github user endpoint, JSONP bitches
                 $.getJSON(url, function (data) {
                     // Make sure our callback is defined and is of the right type, if it is fire it
@@ -119,7 +119,7 @@
 				if (user.hireable === true) {
 					markup += '<p class="ghw-hireable">I\'m available for hire!</p>';
 				}
-				markup += '<span class="ghw-repos">' + user.public_repos + ' repos</span>';
+				markup += '<span class="ghw-prs">' + user.public_repos + ' repos</span>';
 				markup += '<span class="ghw-gists">' + user.public_gists + ' gists</span>';
 				markup += '</div>';
 			}
@@ -139,7 +139,7 @@
 			markup += '</div>';
 			markup += '</div>';
 			// The element which the repos partial will eventually be appended to
-			markup += '<div id="ghw-repos"><div id="ghw-github-loader"></div><ul></ul></div>';
+			markup += '<div id="ghw-prs"><div id="ghw-github-loader"></div><ul></ul></div>';
 			markup += '</div>';
 			return markup;
 		},
@@ -169,6 +169,35 @@
             markup += '<span class="ghw-issues ghw-github-tooltip" data-description="This project has ' + repo.open_issues + ' open issues">' + repo.open_issues + '</span>';
             markup += '</div>';
             markup += '</li>';
+			return markup;
+		},
+
+		// Our pull requests partial, which will construct the pr list itself
+		view_partial_prs: function (data, el) {
+            var markup = '';
+            data = data.data;
+            // Iterate through the prs
+            $.each(data, function (i) {
+                markup += '<li id="ghw-pr-' + i + '" class="ghw-clear ghw-repo';
+                // This is a little bit of a hack to make the CSS easier, if the repo has a language attribute, it will mean
+                // the box carries over two lines, which means the buttons on the right become missaligned. So therefore, if
+                // there are two lines, add a special class so we can style it more easily.
+                if (this.language !== null) {
+                    markup += ' double';
+                }
+                markup += '">';
+                markup += '<div class="ghw-left">';
+                markup += '<p class="ghw-title"><a href="' + this.html_url + '" data-description="<p>' + this.base.repo.full_name + '</p>' + this.title + '</p>' + this.body + '" class="ghw-github-tooltip"><strong>' + this.base.repo.full_name + '</strong> - ' + this.title + '</a></p>';
+                markup += '<p class="ghw-meta-data">';
+                if (this.language !== null) {
+                    markup += '<span class="ghw-language">from: <a href="' + this.head.repo.html_url + '">' + this.head.repo.full_name + '</a></span></p>';
+                }
+                markup += '</div>';
+                markup += '<div class="ghw-right">';
+                markup += '<span class="ghw-forks ghw-github-tooltip" data-description="This repo has ' + this.forks + ' fork(s)">' + this.body + '</span>';
+                markup += '</div>';
+                markup += '</li>';
+            });
 			return markup;
 		},
 
