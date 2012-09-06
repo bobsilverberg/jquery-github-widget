@@ -9,12 +9,10 @@
 	// Setup our defaults
 	var pluginName = 'github',
 		defaults = {
-			user: "joepettersson",
+			user: "mozilla",
 			show_extended_info: true,
 			show_follows: true,
-			width: "400px",
-			show_repos: 10,
-			oldest_first: false
+			width: "400px"
 		};
 
 	// The plugin constructor
@@ -37,7 +35,7 @@
 			// Then init our functions to build the widget
             var el = this.element,
 				options = this.options,
-				user = this.model("user", options.user, function (data) {
+				org = this.org(options.user, function (data) {
 					// Build layout view with user data and append it to the specified element
 					$(el).append(Github.prototype.view_layout(data.data, options));
 				}),
@@ -55,10 +53,9 @@
 
 		},
 
-		// Our user model, get and set user data
-		model: function (type, user, callback) {
-			// Construct our endpoint URL depending on what is being requested
-			var url = "https://api.github.com/orgs/" + user.toLowerCase(); if (type === "repos") { url += "/repos"; } url += "?callback=?";
+		// Get org data
+		org: function (user, callback) {
+			var url = "https://api.github.com/orgs/" + user.toLowerCase() + "?callback=?";
 			// Get data from Github user endpoint, JSONP bitches
 			$.getJSON(url, function (data) {
 				// Make sure our callback is defined and is of the right type, if it is fire it
@@ -164,15 +161,44 @@
             }
             markup += '</div>';
             markup += '<div class="ghw-right">';
-            markup += '<span class="ghw-forks ghw-github-tooltip" data-description="This repo has ' + repo.forks + ' fork(s)">' + repo.forks + '</span>';
-            markup += '<span class="ghw-watchers ghw-github-tooltip" data-description="This repo has ' + repo.watchers + ' watcher(s)">' + repo.watchers + '</span>';
-            markup += '<span class="ghw-issues ghw-github-tooltip" data-description="This project has ' + repo.open_issues + ' open issues">' + repo.open_issues + '</span>';
+            markup += '<a href="' + repo.html_url + '/network/members"><span class="ghw-forks ghw-github-tooltip" data-description="This repo has ' + repo.forks + ' fork(s)">' + repo.forks + '</span></a>';
+            markup += '<a href="' + repo.html_url + '/stargazers"><span class="ghw-watchers ghw-github-tooltip" data-description="This repo has ' + repo.watchers + ' watcher(s)">' + repo.watchers + '</span></a>';
+            markup += '<a href="' + repo.html_url + '/issues"><span class="ghw-issues ghw-github-tooltip" data-description="This project has ' + repo.open_issues + ' open issues">' + repo.open_issues + '</span></a>';
             markup += '</div>';
             markup += '</li>';
 			return markup;
 		},
 
-		// Our bin utility funciton that will be init'd once we have populated the DOM
+        // Our pull requests partial, which will construct the pr list itself
+        view_partial_prs: function (data, el) {
+            var markup = '';
+            data = data.data;
+            // Iterate through the prs
+            $.each(data, function (i) {
+                markup += '<li id="ghw-pr-' + i + '" class="ghw-clear ghw-repo';
+                // This is a little bit of a hack to make the CSS easier, if the repo has a language attribute, it will mean
+                // the box carries over two lines, which means the buttons on the right become missaligned. So therefore, if
+                // there are two lines, add a special class so we can style it more easily.
+                if (this.language !== null) {
+                    markup += ' double';
+                }
+                markup += '">';
+                markup += '<div class="ghw-left">';
+                markup += '<p class="ghw-title"><a href="' + this.html_url + '" data-description="<p>' + this.head.repo.full_name + ' -> ' + this.base.repo.full_name + '</p>' + this.title + '</p>' + this.body + '" class="ghw-github-tooltip"><strong>' + this.base.repo.full_name + '</strong> - ' + this.title + '</a></p>';
+                markup += '<p class="ghw-meta-data">';
+                if (this.language !== null) {
+                    markup += '<span class="ghw-language">from: <a href="' + this.head.repo.html_url + '">' + this.head.repo.full_name + '</a></span></p>';
+                }
+                markup += '</div>';
+                markup += '<div class="ghw-right">';
+                markup += '<span class="ghw-forks">' + this.body + '</span>';
+                markup += '</div>';
+                markup += '</li>';
+            });
+            return markup;
+        },
+
+        // Our bin utility funciton that will be init'd once we have populated the DOM
 		bind: function (el, options) {
 			// If the option to show the extended user info is set to true then bind it to do so
 			if (options.show_extended_info === true) {
