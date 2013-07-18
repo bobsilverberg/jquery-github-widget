@@ -7,6 +7,8 @@
         'moztrap-tests', 'Socorro-Tests', 'snippets-tests', 'sumo-tests', 'mozwebqa-test-templates',
         'qmo-tests', 'wiki-tests', 'bouncer-tests', 'moz-grid-config', 'gaia-ui-tests',
         'mozillians-tests', 'remo-tests'];
+    var accessToken = '0c66ab2b3fceec29a82ec3110679d0fac05af57a';
+
 	// Setup our defaults
 	var pluginName = 'github',
 		defaults = {
@@ -56,7 +58,7 @@
 
 		// Get org data
 		org: function (user, callback) {
-			var url = "https://api.github.com/orgs/" + user.toLowerCase() + "?callback=?";
+			var url = "https://api.github.com/orgs/" + user.toLowerCase() + "?access_token=" + accessToken + "&callback=?";
 			// Get data from Github user endpoint, JSONP bitches
 			$.getJSON(url, function (data) {
 				// Make sure our callback is defined and is of the right type, if it is fire it
@@ -70,7 +72,7 @@
         repo: function (user, callback) {
             for (var i = 0; i < WebQARepos.length; i++) {
                 // Construct our endpoint URL
-                var url = "https://api.github.com/repos/" + user.toLowerCase() + "/" + WebQARepos[i].toLowerCase() + "?callback=?";
+                var url = "https://api.github.com/repos/" + user.toLowerCase() + "/" + WebQARepos[i].toLowerCase() + "?access_token=" + accessToken + "&callback=?";
                 // Get data from Github user endpoint, JSONP bitches
                 $.getJSON(url, function (data) {
                     // Make sure our callback is defined and is of the right type, if it is fire it
