@@ -5,7 +5,7 @@
   var WebQARepos = ['flightdeck-selenium', 'Addon-Tests', 'Affiliates-Tests',
     'marketing-project-template', 'marketplace-tests', 'mdn-tests', 'mcom-tests',
     'moztrap-tests', 'Socorro-Tests', 'snippets-tests', 'sumo-tests', 'mozwebqa-test-templates',
-    'qmo-tests', 'wiki-tests', 'bouncer-tests', 'moz-grid-config', 'gaia-ui-tests',
+    'qmo-tests', 'wiki-tests', 'bouncer-tests', 'moz-grid-config',
     'mozillians-tests', 'remo-tests'];
     var accessToken = '0c66ab2b3fceec29a82ec3110679d0fac05af57a';
 
