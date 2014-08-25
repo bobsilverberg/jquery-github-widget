@@ -2,7 +2,7 @@
 	"use strict";
 
     // WebQA Automation repositories
-    var WebQARepos = ['flightdeck-selenium', 'Addon-Tests', 'Affiliates-Tests',
+    var WebQARepos = ['Addon-Tests', 'Affiliates-Tests',
         'marketing-project-template', 'marketplace-tests', 'mdn-tests', 'mcom-tests',
         'moztrap-tests', 'Socorro-Tests', 'snippets-tests', 'sumo-tests', 'mozwebqa-test-templates',
         'qmo-tests', 'wiki-tests', 'bouncer-tests', 'moz-grid-config',
